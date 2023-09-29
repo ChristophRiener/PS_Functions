@@ -1,0 +1,24 @@
+# Array der Websites
+$websites = @("git.techbold.at", "itglue.com", "powershellgallery.com")
+
+ 
+
+# Loop+if/else für Skript Exit
+foreach ($website in $websites) {
+        $response = Invoke-WebRequest -Uri $website -UseBasicParsing -TimeoutSec 20
+        if ($response.StatusCode -eq 200) {
+			Write-Host "$website erreichbar!"
+		}
+		else {
+		Write-Host "-------------------------------------------------------------"
+
+              Write-Host "Nicht alle Websites erreichbar. Bitte nachbessern auf der FW"
+
+              Write-Host "-------------------------------------------------------------"
+		Exit
+		}
+     }
+
+ 
+
+#-UseBasicParsing depreciated-für backward comp
