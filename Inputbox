@@ -1,0 +1,16 @@
+function Read-InputBoxDialog {
+    param(
+        [string]$Message,
+        [string]$WindowTitle,
+        [string]$DefaultText
+    )
+
+    Add-Type -AssemblyName Microsoft.VisualBasic
+    $InputResult = [Microsoft.VisualBasic.Interaction]::InputBox($Message, $WindowTitle, $DefaultText)
+    
+    return $InputResult
+}
+
+# Example usage:
+$UserInput = Read-InputBoxDialog -Message "Enter your input:" -WindowTitle "Input Box" -DefaultText ""
+Write-Host "User input: $UserInput"
