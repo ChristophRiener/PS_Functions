@@ -1,0 +1,177 @@
+function Expand-Property {
+    [CmdletBinding()]Param(
+        [Parameter(ValueFromPipeline)]
+        [System.Object]
+        $Input,
+
+        [Parameter(Mandatory,Position=0)]
+        [String]
+        $Property
+    )
+
+    process {
+        try {
+            $Input | Select-Object -ExpandProperty $Property
+        }
+        catch {
+            Write-Error -ErrorAction STOP -Message $PSItem.exception.message
+        }
+    }
+}
+
+Set-Alias -Name exp -Value Expand-Property
+
+#--------------------------------------------
+function checklink {
+
+param (
+        $URL
+)
+$URL = $URL
+# First we create the request.
+$HTTP_Request = [System.Net.WebRequest]::Create($URL)
+
+# We then get a response from the site.
+$HTTP_Response = $HTTP_Request.GetResponse()
+
+# We then get the HTTP code as an integer.
+$HTTP_Status = [int]$HTTP_Response.StatusCode
+
+If ($HTTP_Status -eq 200) {
+    Write-Host "Site is OK!"
+     $checklink = 1
+}
+Else {
+    Write-Host "The Site may be down, please check!"
+     $checklink = 0
+}
+
+# Finally, we clean up the http request by closing it.
+If ($HTTP_Response -eq $null) { } 
+Else { $HTTP_Response.Close() }
+}
+
+
+function Show-ReminderMessage {
+    param (
+        [string]$ReminderText,
+        [int]$Seconds = 0
+
+    )
+    Start-Sleep -Seconds $Seconds
+    [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms") | Out-Null
+    [System.Windows.Forms.MessageBox]::Show($ReminderText, "Reminder", 0)
+}
+
+
+function Register-ScheduledTaskMO9 {
+    param (
+        [string]$TaskName,
+        [string]$ReminderText,
+		[string]$FilePath
+    )
+	
+	$ReminderTxt = "Show-ReminderMessage -ReminderText $ReminderText"
+    $TriggerDateTime = Get-Date -Hour 9 -Minute 30 -Second 0 -Millisecond 0
+    $TriggerDateTime = $TriggerDateTime.AddDays(1)
+	$Filepath = "C:\ProgramData\ReminderCLI\remindertext123.ps1"
+
+    $Action = New-ScheduledTaskAction "powershell.exe" "-file $Filepath"
+    $Trigger = New-ScheduledTaskTrigger -Once -At $TriggerDateTime
+
+	Remove-Item -Path C:\ProgramData\ReminderCLI\remindertext123.ps1
+    New-Item C:\ProgramData\ReminderCLI\remindertext123.ps1
+    Set-Content -Path C:\ProgramData\ReminderCLI\remindertext123.ps1 -Value $ReminderTxt
+    
+    Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger -RunLevel Highest
+}
+
+
+function Register-ScheduledTaskCustomTest {
+    param (
+        [string]$TaskName,
+        [String]$FilePath,
+        [string]$ReminderText
+    )
+    $ReminderTxt = "Show-ReminderMessage -ReminderText $ReminderText"
+    $Trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddSeconds(10)
+    $Filepath = "C:\ProgramData\ReminderCLI\remindertext123.ps1"
+    $Action = New-ScheduledTaskAction "powershell.exe" "-file $Filepath"
+    $taskPrincipal = New-ScheduledTaskPrincipal -LogonType Interactive
+    Remove-Item -Path C:\ProgramData\ReminderCLI\remindertext123.ps1
+    New-Item C:\ProgramData\ReminderCLI\remindertext123.ps1
+    Set-Content -Path C:\ProgramData\ReminderCLI\remindertext123.ps1 -Value $ReminderTxt
+
+    Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger -RunLevel Highest
+}
+
+
+
+
+
+function ShowWindow {
+
+  param (
+        [string]$processName
+    )
+
+
+Add-Type -TypeDefinition @"
+    using System;
+    using System.Runtime.InteropServices;
+
+    public class WindowHelper
+    {
+        [DllImport("user32.dll")]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
+    }
+"@
+
+
+$process = Get-Process -Name $processName -ErrorAction SilentlyContinue
+
+if ($process) {
+    $windowHandle = $process.MainWindowHandle
+
+    if ($windowHandle -ne [IntPtr]::Zero) {
+        [WindowHelper]::SetForegroundWindow($windowHandle) | Out-Null
+        #Write-Host "Window of process '$processName' brought to the foreground."
+    } else {
+        #Write-Host "Unable to retrieve the main window handle for process '$processName'."
+    }
+} else {
+    #Write-Host "Process '$processName' not found."
+}
+}
+
+
+function Add-CustomContextMenuEntry {
+    param (
+        [string]$EntryName,
+        [string]$Command,
+        [string]$DisplayName
+    )
+
+    # Define the registry path for the context menu entry
+    $registryPath = "HKCR:\*\shell\$EntryName"
+
+    # Create the registry key for the context menu entry
+    New-Item -Path $registryPath -Force
+
+    # Set the display name for the entry
+    Set-ItemProperty -Path $registryPath -Name "(Default)" -Value $DisplayName
+
+    # Create the 'command' subkey and set the command to be executed
+    $commandPath = Join-Path $registryPath "command"
+    New-Item -Path $commandPath -Force
+    Set-ItemProperty -Path $commandPath -Name "(Default)" -Value $Command
+
+    # Notify the user that the context menu entry has been added
+    Write-Host "Custom context menu entry '$DisplayName' added for files."
+
+    # Force Windows to refresh the shell to apply changes immediately
+    Stop-Process -Name "explorer" -Force
+}
+
+# Example usage:
+# Add-CustomContextMenuEntry -EntryName "MyContextMenuEntry" -Command "YourCommand" -DisplayName "My Custom Context Menu Entry"
