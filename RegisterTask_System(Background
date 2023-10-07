@@ -1,0 +1,6 @@
+$action = New-ScheduledTaskAction -Execute foo.exe -Argument "bar baz"
+$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 1) -RepetitionDuration ([Timespan]::MaxValue)
+$principal = New-ScheduledTaskPrincipal -UserID "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+$settings = New-ScheduledTaskSettingsSet -MultipleInstances Parallel
+
+Register-ScheduledTask -TaskName "tasknamehere" -TaskPath "\my\path" -Action $action -Trigger $trigger -Settings $settings -Principal $principal
