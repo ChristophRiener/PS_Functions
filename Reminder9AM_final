@@ -38,3 +38,5 @@ $UserInput = Read-InputBoxDialog -Message "Enter your input:" -WindowTitle "Inpu
 
 New-OutlookReminderTomorrow9AM -Subject $Userinput
 
+New-OutlookReminderTomorrow9AM -Subject $Userinput
+
