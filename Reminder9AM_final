@@ -1,0 +1,40 @@
+function New-OutlookReminderTomorrow9AM {
+    param(
+        [string]$Subject
+    )
+
+    $Outlook = New-Object -ComObject Outlook.Application
+    $Appointment = $Outlook.CreateItem(1)
+
+    $Tomorrow9AM = (Get-Date).AddDays(1).Date.AddHours(9)
+    
+    $Appointment.Subject = $Subject
+    $Appointment.Start = $Tomorrow9AM
+    $Appointment.ReminderSet = $true
+    $Appointment.ReminderMinutesBeforeStart = 0
+
+    $Appointment.Save()
+    $Appointment.Send()
+
+    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($Appointment) | Out-Null
+    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($Outlook) | Out-Null
+    [System.GC]::Collect()
+}
+
+function Read-InputBoxDialog {
+    param(
+        [string]$Message,
+        [string]$WindowTitle,
+        [string]$DefaultText
+    )
+
+    Add-Type -AssemblyName Microsoft.VisualBasic
+    $InputResult = [Microsoft.VisualBasic.Interaction]::InputBox($Message, $WindowTitle, $DefaultText)
+    
+    return $InputResult
+}
+
+$UserInput = Read-InputBoxDialog -Message "Enter your input:" -WindowTitle "Input Box" -DefaultText ""
+
+New-OutlookReminderTomorrow9AM -Subject $Userinput
+
