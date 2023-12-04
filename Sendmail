@@ -1,3 +1,36 @@
+function send_mail {
+    param(
+        [string]$to_mail,
+        [string]$cc_mail,
+        [string]$subj_mail,
+        [string]$body_mail
+    )
+# Create an Outlook Application object
+$Outlook = New-Object -ComObject Outlook.Application
+
+# Create a new MailItem (email)
+$MailItem = $Outlook.CreateItem(0)  # 0 represents olMailItem (Outlook mail item)
+
+# Set the recipients (To)
+$ToRecipients = $MailItem.Recipients.Add($to_mail)  # Add primary recipient
+$ToRecipients.Type = 1  # 1 represents olTo (To recipient)
+# Set the recipients (CC)
+$CCRecipients = $MailItem.Recipients.Add($cc_mail)  # Add CC recipient
+$CCRecipients.Type = 2  # 2 represents olCC (CC recipient)
+# Set the email subject and body
+$MailItem.Subject = $subj_mail
+$MailItem.Body = $body_mail
+# Display the email composition window
+$MailItem.Display()
+# Release the COM objects to free up resources
+[System.Runtime.Interopservices.Marshal]::ReleaseComObject($CCRecipients) | Out-Null
+[System.Runtime.Interopservices.Marshal]::ReleaseComObject($ToRecipients) | Out-Null
+[System.Runtime.Interopservices.Marshal]::ReleaseComObject($MailItem) | Out-Null
+[System.Runtime.Interopservices.Marshal]::ReleaseComObject($Outlook) | Out-Null
+[System.GC]::Collect()
+
+<#ORIGINAL
+
 # Create an Outlook Application object
 $Outlook = New-Object -ComObject Outlook.Application
 
@@ -24,3 +57,5 @@ $MailItem.Display()
 [System.Runtime.Interopservices.Marshal]::ReleaseComObject($MailItem) | Out-Null
 [System.Runtime.Interopservices.Marshal]::ReleaseComObject($Outlook) | Out-Null
 [System.GC]::Collect()
+
+#>
