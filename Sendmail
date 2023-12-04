@@ -29,6 +29,7 @@ $MailItem.Display()
 [System.Runtime.Interopservices.Marshal]::ReleaseComObject($Outlook) | Out-Null
 [System.GC]::Collect()
 
+}
 <#ORIGINAL
 
 # Create an Outlook Application object
