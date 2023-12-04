@@ -1,0 +1,22 @@
+# Install the ImportExcel module if not already installed
+Install-Module -Name ImportExcel -Force -AllowClobber
+
+# Import the ImportExcel module
+Import-Module ImportExcel
+
+# Specify the path to your Excel file
+$excelFilePath = "C:\Path\To\Your\File.xlsx"
+
+# Load the Excel file
+$data = Import-Excel -Path $excelFilePath
+
+# Specify the sheet name and cell coordinates
+$sheetName = "Sheet1"
+$rowNumber = 1
+$columnLetter = "A"
+
+# Get the value from the specified cell
+$blabla = $data | Where-Object { $_.'SheetName' -eq $sheetName -and $_.'Row' -eq $rowNumber -and $_.'Column' -eq $columnLetter }
+
+# Display the value
+Write-Host "The value in $sheetName, Row $rowNumber, Column $columnLetter is: $($blabla.Value)"
