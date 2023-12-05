@@ -1,0 +1,23 @@
+To authenticate your requests when interacting with the GitHub API from PowerShell, you can use a personal access token (PAT). Here's how you can do it:
+
+First, you need to generate a personal access token from your GitHub account. You can do this by going to Settings -> Developer settings -> Personal access tokens -> Generate new token.
+
+Once you have your token, you can use it in your PowerShell script to authenticate your requests. Here's an example:
+
+In this code, replace "your_personal_access_token" with your actual personal access token. This will fetch the public information of the user "octocat" from GitHub.
+
+Remember to replace "octocat" with the actual GitHub username you want to fetch information for. Also, be sure to keep your personal access token secure and do not share it with anyone.
+
+$token = "your_personal_access_token"
+$headers = @{
+    "Authorization" = "token $token"
+}
+
+$uri = "https://api.github.com/user/repos"
+
+$body = @{
+    name = "new-repo"
+} | ConvertTo-Json
+
+$response = Invoke-RestMethod -Uri $uri -Method Post -Body $body -Headers $headers -ContentType "application/json"
+$response
