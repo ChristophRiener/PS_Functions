@@ -1,0 +1,20 @@
+To create a new repository using the GitHub API from PowerShell, you can use the Invoke-RestMethod cmdlet. Here's an example:
+
+In this code, replace "your_personal_access_token" with your actual personal access token and "new-repo" with the name you want for your new repository. This will create a new repository in your GitHub account.
+
+Remember to keep your personal access token secure and do not share it with anyone.
+
+
+$token = "your_personal_access_token"
+$headers = @{
+    "Authorization" = "token $token"
+}
+
+$uri = "https://api.github.com/user/repos"
+
+$body = @{
+    name = "new-repo"
+} | ConvertTo-Json
+
+$response = Invoke-RestMethod -Uri $uri -Method Post -Body $body -Headers $headers -ContentType "application/json"
+$response
