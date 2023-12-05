@@ -1,0 +1,17 @@
+function
+# Import the Import-Excel and Export-Excel modules
+Import-Module ImportExcel
+
+# Specify the paths of the input and output Excel files
+$inputExcelPath = "C:\Path\To\Your\Input\Excel\File.xlsx"
+$outputExcelPath = "C:\Path\To\Your\Output\Excel\File.xlsx"
+
+# Import data from the input Excel file
+$data = Import-Excel -Path $inputExcelPath
+
+# Create a new column (Column2) in the data and set its values equal to the values in Column1
+$data | ForEach-Object { $_.Column2 = $_.Column1 }
+
+# Export the modified data to the output Excel file
+$data | Export-Excel -Path $outputExcelPath -AutoSize -AutoFilter -FreezeTopRow -BoldTopRow -WorksheetName "Sheet1"
+}
