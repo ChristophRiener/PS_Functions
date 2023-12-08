@@ -1,0 +1,21 @@
+Sub RunPowerShellVariables()
+    Dim objShell As Object
+    Dim strPowerShellCode As String
+
+    ' Define your PowerShell code with variables
+    strPowerShellCode = "$name = 'John'" & vbCrLf & _
+                       "$age = 30" & vbCrLf & _
+                       "$city = 'ExampleCity'" & vbCrLf & _
+                       "Write-Host ('Name: ' + $name)" & vbCrLf & _
+                       "Write-Host ('Age: ' + $age)" & vbCrLf & _
+                       "Write-Host ('City: ' + $city)"
+
+    ' Create a Shell object
+    Set objShell = VBA.CreateObject("WScript.Shell")
+
+    ' Run PowerShell code
+    objShell.Run "powershell.exe -Command """ & strPowerShellCode & """"
+
+    ' Release the Shell object
+    Set objShell = Nothing
+End Sub
