@@ -1,0 +1,45 @@
+# Specify the path to your input text file
+$inputFilePath = "C:\temp\test_txts\input.txt"
+
+# Specify the path for the output text file (same location)
+$outputFilePath = "C:\temp\test_txts\output.txt"
+
+# Read the content of the input file
+$content = Get-Content -Path $inputFilePath
+
+# Create a hashtable to store unique longer strings
+$uniqueStrings = @{}
+
+# Initialize an array to store the modified lines
+$modifiedLines = @()
+
+# Iterate through each line in the file
+foreach ($line in $content) {
+    # Use regular expressions to find strings longer than 5 characters
+    $matches = [regex]::Matches($line, '\w{6,}')
+    $lineContainsDuplicate = $false
+    
+    # Loop through the matches
+    foreach ($match in $matches) {
+        $matchValue = $match.Value
+        if ($uniqueStrings.ContainsKey($matchValue)) {
+            # If the string already exists in the hashtable, set a flag
+            $lineContainsDuplicate = $true
+            break
+        } else {
+            # If it's a new unique string, add it to the hashtable
+            $uniqueStrings[$matchValue] = $true
+        }
+    }
+    
+    # If the line doesn't contain a duplicate, add it to the modified lines array
+    if (-not $lineContainsDuplicate) {
+        $modifiedLines += $line
+    }
+}
+
+# Output the modified lines to the output file
+$modifiedLines | Out-File -FilePath $outputFilePath
+
+# Optional: Display the unique longer strings found
+$uniqueStrings.Keys
