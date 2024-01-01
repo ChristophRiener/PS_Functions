@@ -1,0 +1,39 @@
+function Extract_Bookmarks_to_Clipboard {
+     param (
+        [string]$Path
+    )
+
+    # Define the output file path
+    $outputFile = "C:\temp\cb_temp.txt"
+
+    # Try to process the file
+    try {
+        # Check if the input file exists
+        if (-not (Test-Path $Path)) {
+            throw "Input file not found: $Path"
+        }
+
+        # Clear the output file content at the start
+        if (Test-Path $outputFile) {
+            Clear-Content $outputFile
+        } else {
+            New-Item -Path $outputFile -ItemType File -Force
+        }
+
+        # Read the file and process each line
+        Get-Content $Path | ForEach-Object {
+            if ($_ -match '"https.*?"') {
+                # Output only the content between the first two quotes that starts with https
+                $matches[0].Substring(1, $matches[0].Length - 2) >> $outputFile
+            }
+        }
+
+        # Copy the output file content to the clipboard
+        Get-Content -Path $outputFile | Set-Clipboard
+
+        Write-Host "Processing complete. Check the output file: $outputFile"
+    }
+    catch {
+        Write-Host "An error occurred: $_"
+    }
+}
