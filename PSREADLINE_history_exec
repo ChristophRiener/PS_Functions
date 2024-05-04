@@ -1,0 +1,38 @@
+function historyexec {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, Position = 0)]
+        [int]$LineNumber
+    )
+
+    # Static file path
+    $FilePath = "C:\Users\chris\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt"
+
+    # Read all lines from the file
+    $lines = Get-Content -Path $FilePath
+
+    # Check if the requested line number is valid
+    if ($LineNumber -le 0 -or $LineNumber -gt $lines.Count) {
+        Write-Error "Line number is out of range."
+        return
+    }
+
+    # Retrieve the specific line of code
+    $codeToExecute = $lines[$LineNumber - 1]  # Adjust for zero-based index
+
+    # Display the line of code
+    Write-Output "Code to be executed: `n$codeToExecute"
+
+    # Confirm execution
+    $confirmation = Read-Host "Do you want to execute this line of code? (Y/N)"
+    if ($confirmation -eq 'Y' -or $confirmation -eq 'y') {
+        try {
+            Invoke-Expression $codeToExecute
+            Write-Output "Execution successful."
+        } catch {
+            Write-Error "Failed to execute the line: $_"
+        }
+    } else {
+        Write-Output "Execution cancelled."
+    }
+}
