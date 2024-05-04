@@ -1,9 +1,0 @@
-function History_Invoke {
-    param(
-        [Parameter(Mandatory = $true, Position = 0)]
-        [int]$HistoryId
-    )
-
-    Invoke-History -Id $HistoryId
-}
-
