@@ -1,0 +1,73 @@
+function Invoke-WithProgress {
+    <#
+    .SYNOPSIS
+    Executes a script block with a progress bar.
+
+    .DESCRIPTION
+    This function runs a provided script block as a background job and displays a progress bar
+    in the foreground. It periodically checks the job's status and updates the progress bar until
+    the job completes.
+
+    .PARAMETER ScriptBlock
+    The script block to execute with the progress bar.
+
+    .EXAMPLE
+    Invoke-WithProgress -ScriptBlock {
+        Start-Sleep -Seconds 10
+    }
+    This example runs a simple script block that sleeps for 10 seconds with a progress bar.
+
+    .EXAMPLE
+    $complexScriptBlock = {
+        Write-Output "Starting complex task..."
+        Start-Sleep -Seconds 5
+        Write-Output "Halfway done..."
+        Start-Sleep -Seconds 5
+        Write-Output "Task completed."
+    }
+    Invoke-WithProgress -ScriptBlock $complexScriptBlock
+    This example runs a more complex script block with multiple steps and outputs messages.
+
+    .NOTES
+    Author: Your Name
+    Date: May 2024
+    #>
+    param (
+        [Parameter(Mandatory = $true, Position = 0)]
+        [ScriptBlock]$ScriptBlock
+    )
+
+    # Start a background job for the provided script block
+    $job = Start-Job -ScriptBlock $ScriptBlock
+
+    # Initialize progress
+    $activity = "Running Command"
+    $status = "Progress"
+    $percentComplete = 0
+
+    # While the job is running, update the progress bar
+    while ($job.State -eq "Running") {
+        # Update progress bar
+        Write-Progress -Activity $activity -Status $status -PercentComplete $percentComplete
+        Start-Sleep -Seconds 3
+        $percentComplete += 10
+        if ($percentComplete -gt 100) { $percentComplete = 100 }
+    }
+
+    # Wait for the job to complete and get the result
+    $result = $job | Wait-Job | Receive-Job
+
+    # Clean up the job
+    Remove-Job -Job $job
+
+    # Final progress bar update
+    Write-Progress -Activity $activity -Status "Completed" -PercentComplete 100 -Completed
+
+    return $result
+}
+
+# Example usage
+Invoke-WithProgress -ScriptBlock {
+    # Simulate a long-running command
+    Start-Sleep -Seconds 10
+}
