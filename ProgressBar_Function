@@ -26,11 +26,7 @@ function Invoke-WithProgress {
         Write-Output "Task completed."
     }
     Invoke-WithProgress -ScriptBlock $complexScriptBlock
-    This example runs a more complex script block with multiple steps and outputs messages.
-
-    .NOTES
-    Author: Your Name
-    Date: May 2024
+    This example runs a more complex script block with multiple steps and outputs messages
     #>
     param (
         [Parameter(Mandatory = $true, Position = 0)]
