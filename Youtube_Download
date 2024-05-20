@@ -1,0 +1,10 @@
+function youtube-download {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true, Position=0)]
+        [string]$Url
+    )
+
+    # Construct the yt-dlp command
+    $command = "yt-dlp.exe --audio-format mp3 --yes-playlist -x $Url"
+}
