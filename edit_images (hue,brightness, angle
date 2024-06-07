@@ -1,0 +1,104 @@
+function Edit-Images {
+    param (
+        [string]$directory,
+        [float]$angle = 0,
+        [string]$rotationDirection = "clockwise",
+        [float]$hueAdjustment = 0,
+        [float]$brightnessAdjustment = 0
+    )
+    # Load the System.Drawing assembly
+    Add-Type -AssemblyName System.Drawing
+    # Create the output directory if it doesn't exist
+    $outputDirectory = "$directory\Edited"
+    if (-not (Test-Path $outputDirectory)) {
+        New-Item -ItemType Directory -Path $outputDirectory
+    }
+
+    # Function to adjust hue
+    function Adjust-Hue {
+        param (
+            [System.Drawing.Bitmap]$bitmap,
+            [float]$hueAdjustment
+        )
+        # Convert hue adjustment to degrees (0-360)
+        $hueAdjustment = $hueAdjustment % 360
+        $colorMatrix = [System.Drawing.Imaging.ColorMatrix]::new(
+            [float[]]@(1, 0, 0, 0, 0,
+                       0, 1, 0, 0, 0,
+                       0, 0, 1, 0, 0,
+                       0, 0, 0, 1, 0,
+                       0, 0, 0, 0, 1))
+        $imageAttributes = [System.Drawing.Imaging.ImageAttributes]::new()
+        $imageAttributes.SetColorMatrix($colorMatrix)
+
+        $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+        $graphics.DrawImage($bitmap, [System.Drawing.Rectangle]::new(0, 0, $bitmap.Width, $bitmap.Height), 0, 0, $bitmap.Width, $bitmap.Height, [System.Drawing.GraphicsUnit]::Pixel, $imageAttributes)
+        $graphics.Dispose()
+    }
+
+    # Function to adjust brightness
+    function Adjust-Brightness {
+        param (
+            [System.Drawing.Bitmap]$bitmap,
+            [float]$brightnessAdjustment
+        )
+        $brightnessAdjustment = [Math]::Min([Math]::Max($brightnessAdjustment, -1), 1) # Clamp to [-1, 1]
+        $brightness = 1 + $brightnessAdjustment # Convert to range [0, 2]
+
+        $colorMatrix = [System.Drawing.Imaging.ColorMatrix]::new(
+            [float[]]@($brightness, 0, 0, 0, 0,
+                       0, $brightness, 0, 0, 0,
+                       0, 0, $brightness, 0, 0,
+                       0, 0, 0, 1, 0,
+                       0, 0, 0, 0, 1))
+        $imageAttributes = [System.Drawing.Imaging.ImageAttributes]::new()
+        $imageAttributes.SetColorMatrix($colorMatrix)
+
+        $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+        $graphics.DrawImage($bitmap, [System.Drawing.Rectangle]::new(0, 0, $bitmap.Width, $bitmap.Height), 0, 0, $bitmap.Width, $bitmap.Height, [System.Drawing.GraphicsUnit]::Pixel, $imageAttributes)
+        $graphics.Dispose()
+    }
+
+    # Function to rotate an image
+    function Rotate-Image {
+        param (
+            [System.Drawing.Bitmap]$bitmap,
+            [float]$angle,
+            [string]$rotationDirection
+        )
+        if ($rotationDirection -eq "counterclockwise") {
+            $angle = -$angle
+        }
+
+        $rotatedBitmap = New-Object System.Drawing.Bitmap $bitmap.Width, $bitmap.Height
+        $graphics = [System.Drawing.Graphics]::FromImage($rotatedBitmap)
+        $graphics.TranslateTransform($bitmap.Width / 2, $bitmap.Height / 2)
+        $graphics.RotateTransform($angle)
+        $graphics.TranslateTransform(-$bitmap.Width / 2, -$bitmap.Height / 2)
+        $graphics.DrawImage($bitmap, [System.Drawing.Point]::Empty)
+        $graphics.Dispose()
+        $rotatedBitmap
+    }
+
+    # Process each image in the directory
+    foreach ($imagePath in Get-ChildItem -Path $directory -Filter *.png) {
+        $bitmap = [System.Drawing.Bitmap]::FromFile($imagePath.FullName)
+        
+        # Apply image adjustments
+        $bitmap = Rotate-Image -bitmap $bitmap -angle $angle -rotationDirection $rotationDirection
+        Adjust-Hue -bitmap $bitmap -hueAdjustment $hueAdjustment
+        Adjust-Brightness -bitmap $bitmap -brightnessAdjustment $brightnessAdjustment
+
+        # Save the edited image
+        $outputPath = Join-Path -Path $outputDirectory -ChildPath $imagePath.Name
+        $bitmap.Save($outputPath)
+
+        # Dispose of the bitmap
+        $bitmap.Dispose()
+    }
+
+    Write-Output "Images have been successfully edited and saved to $outputDirectory"
+}
+
+# Example usage:
+# Edit-Images -directory "C:\Path\To\Your\Images" -angle 5 -rotationDirection "clockwise" -hueAdjustment 30 -brightnessAdjustment 0.2
