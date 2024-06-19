@@ -1,0 +1,119 @@
+function List-Devices {
+    [CmdletBinding()]
+    param (
+        [switch]$Audio,
+        [switch]$Video,
+        [switch]$Mic,
+        [switch]$Network,
+        [switch]$Disk,
+        [switch]$USB,
+        [switch]$Printer,
+        [switch]$Battery,
+        [switch]$Keyboard,
+        [switch]$Mouse,
+        [switch]$Monitor,
+	[switch]$Camera
+    )
+
+    if ($Audio) {
+        # List Audio devices
+        $audioDevices = Get-CimInstance -Namespace root\cimv2 -ClassName Win32_SoundDevice
+        foreach ($device in $audioDevices) {
+            Write-Output "Audio Device: $($device.Name), Manufacturer: $($device.Manufacturer), Status: $($device.Status)"
+        }
+    }
+
+    if ($Video) {
+        # List Video devices
+        $videoDevices = Get-CimInstance -Namespace root\cimv2 -ClassName Win32_VideoController
+        foreach ($device in $videoDevices) {
+            Write-Output "Video Device: $($device.Name), Adapter RAM: $($device.AdapterRAM), Driver Version: $($device.DriverVersion)"
+        }
+    }
+
+    if ($Mic) {
+        # List Microphone devices
+        $micDevices = Get-CimInstance -Namespace root\cimv2 -ClassName Win32_SoundDevice | Where-Object { $_.Description -like '*input*' }
+        foreach ($device in $micDevices) {
+            Write-Output "Microphone Device: $($device.Name), Manufacturer: $($device.Manufacturer), Status: $($device.Status)"
+        }
+    }
+
+    if ($Network) {
+        # List Network adapters
+        $networkDevices = Get-CimInstance -Namespace root\cimv2 -ClassName Win32_NetworkAdapter
+        foreach ($device in $networkDevices) {
+            Write-Output "Network Adapter: $($device.Name), MAC Address: $($device.MACAddress), Status: $($device.NetConnectionStatus)"
+        }
+    }
+
+    if ($Disk) {
+        # List Disk drives
+        $diskDevices = Get-CimInstance -Namespace root\cimv2 -ClassName Win32_DiskDrive
+        foreach ($device in $diskDevices) {
+            Write-Output "Disk Drive: $($device.Model), Interface Type: $($device.InterfaceType), Size: $([Math]::Round($device.Size / 1GB, 2)) GB"
+        }
+    }
+
+    if ($USB) {
+        # List USB devices
+        $usbDevices = Get-CimInstance -Namespace root\cimv2 -ClassName Win32_USBControllerDevice
+        foreach ($device in $usbDevices) {
+            $usbDevice = [Wmi]$device.Dependent
+            Write-Output "USB Device: $($usbDevice.Name), Manufacturer: $($usbDevice.Manufacturer), Device ID: $($usbDevice.DeviceID)"
+        }
+    }
+
+    if ($Printer) {
+        # List Printer devices
+        $printerDevices = Get-CimInstance -Namespace root\cimv2 -ClassName Win32_Printer
+        foreach ($device in $printerDevices) {
+            Write-Output "Printer: $($device.Name), Status: $($device.PrinterStatus), Location: $($device.Location)"
+        }
+    }
+
+    if ($Battery) {
+        # List Battery devices
+        $batteryDevices = Get-CimInstance -Namespace root\cimv2 -ClassName Win32_Battery
+        foreach ($device in $batteryDevices) {
+            Write-Output "Battery: $($device.Name), Status: $($device.BatteryStatus), Estimated Charge Remaining: $($device.EstimatedChargeRemaining)%"
+        }
+    }
+
+    if ($Keyboard) {
+        # List Keyboard devices
+        $keyboardDevices = Get-CimInstance -Namespace root\cimv2 -ClassName Win32_Keyboard
+        foreach ($device in $keyboardDevices) {
+            Write-Output "Keyboard: $($device.Name), Description: $($device.Description)"
+        }
+    }
+
+    if ($Mouse) {
+        # List Mouse devices
+        $mouseDevices = Get-CimInstance -Namespace root\cimv2 -ClassName Win32_PointingDevice
+        foreach ($device in $mouseDevices) {
+            Write-Output "Mouse: $($device.Name), Description: $($device.Description)"
+        }
+    }
+
+    if ($Monitor) {
+        # List Monitor devices
+        $monitorDevices = Get-CimInstance -Namespace root\cimv2 -ClassName Win32_DesktopMonitor
+        foreach ($device in $monitorDevices) {
+            Write-Output "Monitor: $($device.Name), Screen Height: $($device.ScreenHeight), Screen Width: $($device.ScreenWidth)"
+        }
+    }
+
+    if ($Camera) {
+    	# List Camera devices
+    	$cameraDevices = Get-CimInstance -Namespace root\cimv2 -ClassName Win32_PnPEntity | Where-Object { $_.Description -match 'camera|imaging' }
+    foreach ($device in $cameraDevices) {
+        Write-Output "Camera: $($device.Name), Manufacturer: $($device.Manufacturer), Status: $($device.Status)"
+    }
+}
+
+
+    if (-not ($Audio -or $Video -or $Mic -or $Network -or $Disk -or $USB -or $Printer -or $Battery -or $Keyboard -or $Mouse -or $Monitor -or $Camera)) {
+        Write-Output "Please specify at least one device type to list: -Audio, -Video, -Mic, -Network, -Disk, -USB, -Printer, -Battery, -Keyboard, -Mouse, or -Monitor."
+    }
+}
