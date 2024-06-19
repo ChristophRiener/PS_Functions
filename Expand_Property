@@ -1,0 +1,22 @@
+function Expand-Property {
+    [CmdletBinding()]Param(
+        [Parameter(ValueFromPipeline)]
+        [System.Object]
+        $Input,
+
+        [Parameter(Mandatory,Position=0)]
+        [String]
+        $Property
+    )
+
+    process {
+        try {
+            $Input | Select-Object -ExpandProperty $Property
+        }
+        catch {
+            Write-Error -ErrorAction STOP -Message $PSItem.exception.message
+        }
+    }
+}
+
+Set-Alias -Name exp -Value Expand-Property
