@@ -1,0 +1,47 @@
+function Invoke-ChatGPT {
+    param(
+        [Parameter(ValueFromRemainingArguments=$true)]
+        [string]$Message,
+        [string]$AiSystemMessage = "You are a helpful assistant."
+    )
+    Set-Alias gpt Invoke-ChatGPT	
+    $ApiKey = "INSERT_API_KEY_HERE"
+
+    $ApiEndpoint = "https://api.openai.com/v1/chat/completions"
+
+    # Prepare messages array
+    $messages = @(
+        [PSCustomObject]@{ role = "system"; content = $AiSystemMessage }
+        [PSCustomObject]@{ role = "user";  content = $Message }
+    )
+
+    # Headers
+    $headers = @{
+        "Content-Type"  = "application/json"
+        "Authorization" = "Bearer $ApiKey"
+    }
+
+    # Prepare UTF-8 encoded JSON in one line
+    $body = [System.Text.Encoding]::UTF8.GetBytes(($(
+        [PSCustomObject]@{
+            model       = "gpt-4o-mini"
+            messages    = $messages
+            max_tokens  = 2000
+            temperature = 0.5
+        }
+    ) | ConvertTo-Json -Depth 3 -Compress))
+    #Try cuz Array Error when Null
+    try {
+        $response = Invoke-RestMethod -Method POST -Uri $ApiEndpoint -Headers $headers -Body $body
+
+        if ($null -eq $response.choices -or $response.choices.Count -eq 0) {
+            Write-Error "No choices returned. Full response:`n$($response | ConvertTo-Json -Depth 5 -Compress)"
+            return
+        }
+
+        return $response.choices[0].message.content
+    }
+    catch {
+        Write-Error "Request failed: $($_.Exception.Message)"
+    }
+}
