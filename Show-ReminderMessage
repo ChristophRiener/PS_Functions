@@ -1,0 +1,10 @@
+function Show-ReminderMessage {
+    param (
+        [string]$ReminderText,
+        [int]$Seconds = 0
+
+    )
+    Start-Sleep -Seconds $Seconds
+    [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms") | Out-Null
+    [System.Windows.Forms.MessageBox]::Show($ReminderText, "Reminder", 0)
+}
