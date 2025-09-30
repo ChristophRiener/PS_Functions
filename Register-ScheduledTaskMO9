@@ -1,0 +1,21 @@
+function Register-ScheduledTaskMO9 {
+    param (
+        [string]$TaskName,
+        [string]$ReminderText,
+		[string]$FilePath
+    )
+	
+	$ReminderTxt = "Show-ReminderMessage -ReminderText $ReminderText"
+    $TriggerDateTime = Get-Date -Hour 9 -Minute 30 -Second 0 -Millisecond 0
+    $TriggerDateTime = $TriggerDateTime.AddDays(1)
+	$Filepath = "C:\ProgramData\ReminderCLI\remindertext123.ps1"
+
+    $Action = New-ScheduledTaskAction "powershell.exe" "-file $Filepath"
+    $Trigger = New-ScheduledTaskTrigger -Once -At $TriggerDateTime
+
+	Remove-Item -Path C:\ProgramData\ReminderCLI\remindertext123.ps1
+    New-Item C:\ProgramData\ReminderCLI\remindertext123.ps1
+    Set-Content -Path C:\ProgramData\ReminderCLI\remindertext123.ps1 -Value $ReminderTxt
+    
+    Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger -RunLevel Highest
+}
