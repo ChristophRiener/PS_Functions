@@ -1,0 +1,17 @@
+function Register-ScheduledTaskCustomTest {
+    param (
+        [string]$TaskName,
+        [String]$FilePath,
+        [string]$ReminderText
+    )
+    $ReminderTxt = "Show-ReminderMessage -ReminderText $ReminderText"
+    $Trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddSeconds(10)
+    $Filepath = "C:\ProgramData\ReminderCLI\remindertext123.ps1"
+    $Action = New-ScheduledTaskAction "powershell.exe" "-file $Filepath"
+    $taskPrincipal = New-ScheduledTaskPrincipal -LogonType Interactive
+    Remove-Item -Path C:\ProgramData\ReminderCLI\remindertext123.ps1
+    New-Item C:\ProgramData\ReminderCLI\remindertext123.ps1
+    Set-Content -Path C:\ProgramData\ReminderCLI\remindertext123.ps1 -Value $ReminderTxt
+
+    Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger -RunLevel Highest
+}
