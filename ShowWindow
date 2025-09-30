@@ -1,0 +1,35 @@
+
+function ShowWindow {
+
+  param (
+        [string]$processName
+    )
+
+
+Add-Type -TypeDefinition @"
+    using System;
+    using System.Runtime.InteropServices;
+
+    public class WindowHelper
+    {
+        [DllImport("user32.dll")]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
+    }
+"@
+
+
+$process = Get-Process -Name $processName -ErrorAction SilentlyContinue
+
+if ($process) {
+    $windowHandle = $process.MainWindowHandle
+
+    if ($windowHandle -ne [IntPtr]::Zero) {
+        [WindowHelper]::SetForegroundWindow($windowHandle) | Out-Null
+        #Write-Host "Window of process '$processName' brought to the foreground."
+    } else {
+        #Write-Host "Unable to retrieve the main window handle for process '$processName'."
+    }
+} else {
+    #Write-Host "Process '$processName' not found."
+}
+}
