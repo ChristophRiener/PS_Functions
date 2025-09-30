@@ -1,0 +1,30 @@
+function Add-CustomContextMenuEntry {
+    param (
+        [string]$EntryName,
+        [string]$Command,
+        [string]$DisplayName
+    )
+
+    # Define the registry path for the context menu entry
+    $registryPath = "HKCR:\*\shell\$EntryName"
+
+    # Create the registry key for the context menu entry
+    New-Item -Path $registryPath -Force
+
+    # Set the display name for the entry
+    Set-ItemProperty -Path $registryPath -Name "(Default)" -Value $DisplayName
+
+    # Create the 'command' subkey and set the command to be executed
+    $commandPath = Join-Path $registryPath "command"
+    New-Item -Path $commandPath -Force
+    Set-ItemProperty -Path $commandPath -Name "(Default)" -Value $Command
+
+    # Notify the user that the context menu entry has been added
+    Write-Host "Custom context menu entry '$DisplayName' added for files."
+
+    # Force Windows to refresh the shell to apply changes immediately
+    Stop-Process -Name "explorer" -Force
+}
+
+# Example usage:
+# Add-CustomContextMenuEntry -EntryName "MyContextMenuEntry" -Command "YourCommand" -DisplayName "My Custom Context Menu Entry"
